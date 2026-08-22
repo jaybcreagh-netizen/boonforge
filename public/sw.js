@@ -1,4 +1,4 @@
-const CACHE = 'boonforge-v1'
+const CACHE = 'boonforge-v2'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -20,20 +20,34 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return
+  if (request.method !== 'GET') return
+  const url = new URL(request.url)
+  if (url.origin !== self.location.origin) return
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const copy = response.clone()
+          caches.open(CACHE).then((cache) => cache.put('./index.html', copy))
+          return response
+        })
+        .catch(() => caches.match('./index.html')),
+    )
+    return
+  }
+
   event.respondWith(
     caches.match(request).then(
       (hit) =>
         hit ||
-        fetch(request)
-          .then((response) => {
-            if (response.ok && request.destination !== '') {
-              const copy = response.clone()
-              caches.open(CACHE).then((cache) => cache.put(request, copy))
-            }
-            return response
-          })
-          .catch(() => caches.match('/')),
+        fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone()
+            caches.open(CACHE).then((cache) => cache.put(request, copy))
+          }
+          return response
+        }),
     ),
   )
 })
