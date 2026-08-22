@@ -1,0 +1,223 @@
+import { useEffect, useMemo, useState } from 'react'
+import type { Boon, BoonSlot, BuildState, GodId, WeaponId } from './data/types'
+import { EMPTY_BUILD, MAX_KEEPSAKES, SEEDED_GOD_IDS } from './data/types'
+import { GODS } from './data/gods'
+import { WEAPON_BY_ID } from './data/weapons'
+import { boonsForGod, BOON_BY_ID } from './data/boons'
+import { slotPick, toggleBoon, unmetGroups, unlockCandidates, ownedSet, suggestions } from './lib/build'
+import { decodeBuild } from './lib/share'
+import WeaponPanel from './components/WeaponPanel'
+import KeepsakePanel from './components/KeepsakePanel'
+import HexPicker from './components/HexPicker'
+import CursePanel from './components/CursePanel'
+import ArcanaPanel from './components/ArcanaPanel'
+import SuggestionPanel from './components/SuggestionPanel'
+import SlotBar from './components/SlotBar'
+import HistoryStrip from './components/HistoryStrip'
+import StatusPanel from './components/StatusPanel'
+import BoonCard from './components/BoonCard'
+
+const STORAGE_KEY = 'boonforge.build.v1'
+
+function loadBuild(): BuildState {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return EMPTY_BUILD
+    const parsed = JSON.parse(raw) as Partial<BuildState>
+    return {
+      weaponId: parsed.weaponId ?? null,
+      aspectId: parsed.aspectId ?? null,
+      picked: Array.isArray(parsed.picked) ? parsed.picked.filter((id) => typeof id === 'string') : [],
+      keepsakes: Array.isArray(parsed.keepsakes) ? parsed.keepsakes.filter((id) => typeof id === 'string') : [],
+      hexId: typeof parsed.hexId === 'string' ? parsed.hexId : null,
+    }
+  } catch {
+    return EMPTY_BUILD
+  }
+}
+
+function loadSharedBuild(): BuildState | null {
+  const code = new URLSearchParams(window.location.search).get('b')
+  if (!code) return null
+  return decodeBuild(code)
+}
+
+export default function App() {
+  const [build, setBuild] = useState<BuildState>(() => loadSharedBuild() ?? loadBuild())
+  const [activeGods, setActiveGods] = useState<Set<GodId>>(() => new Set<GodId>(['zeus', 'hestia', 'apollo']))
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).has('b')) {
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(build))
+    } catch {
+      /* storage unavailable */
+    }
+  }, [build])
+
+  const picks = useMemo(
+    () => ({
+      attack: slotPick(build, 'attack'),
+      special: slotPick(build, 'special'),
+      cast: slotPick(build, 'cast'),
+      sprint: slotPick(build, 'sprint'),
+    }),
+    [build],
+  )
+
+  const owned = useMemo(() => ownedSet(build), [build])
+  const candidates = useMemo(() => unlockCandidates(build.picked, activeGods), [build, activeGods])
+  const suggs = useMemo(() => suggestions(build.picked, activeGods, build.aspectId), [build.picked, activeGods, build.aspectId])
+
+  const pickById = (id: string) => {
+    const boon = BOON_BY_ID.get(id)
+    if (boon) setBuild(toggleBoon(build, boon))
+  }
+
+  const selectWeapon = (id: WeaponId) => {
+    const keepsAspect = WEAPON_BY_ID.get(id)?.aspects.some((a) => a.id === build.aspectId) ?? false
+    setBuild({ ...build, weaponId: id, aspectId: keepsAspect ? build.aspectId : null })
+  }
+
+  const selectAspect = (id: string | null) => {
+    if (id === null) {
+      setBuild({ ...build, aspectId: null })
+      return
+    }
+    setBuild({ ...build, aspectId: build.aspectId === id ? null : id })
+  }
+
+  const clearSlot = (slot: BoonSlot) => {
+    const boon = slotPick(build, slot)
+    if (!boon) return
+    setBuild(toggleBoon(build, boon))
+  }
+
+  const toggleGod = (id: GodId) => {
+    setActiveGods((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleKeepsake = (id: string) => {
+    if (build.keepsakes.includes(id)) {
+      setBuild({ ...build, keepsakes: build.keepsakes.filter((k) => k !== id) })
+    } else if (build.keepsakes.length < MAX_KEEPSAKES) {
+      setBuild({ ...build, keepsakes: [...build.keepsakes, id] })
+    }
+  }
+
+  const selectHex = (id: string | null) => {
+    setBuild({ ...build, hexId: id })
+  }
+
+  const seededGods = GODS.filter((g) => SEEDED_GOD_IDS.includes(g.id))
+  const visibleGods = seededGods.filter((g) => activeGods.has(g.id))
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-200">
+      <header className="border-b border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950">
+        <div className="mx-auto max-w-7xl px-4 py-5">
+          <h1 className="font-serif text-2xl font-bold tracking-wide text-amber-100">BoonForge</h1>
+          <p className="mt-0.5 text-sm text-zinc-500">Hades II build companion — plan boons, chase duos, forge your run.</p>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl space-y-6 px-4 py-6">
+        <SlotBar picks={picks} onClear={clearSlot} />
+        <HistoryStrip picked={build.picked} onUndo={() => setBuild({ ...build, picked: build.picked.slice(0, -1) })} />
+
+        <div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)_320px]">
+          <div className="space-y-4">
+            <WeaponPanel build={build} onSelectWeapon={selectWeapon} onSelectAspect={selectAspect} />
+            <KeepsakePanel selected={build.keepsakes} onToggle={toggleKeepsake} />
+            <HexPicker selected={build.hexId} onSelect={selectHex} />
+
+            <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-amber-200/80">Boon Givers</h2>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {seededGods.map((god) => {
+                  const active = activeGods.has(god.id)
+                  return (
+                    <button
+                      key={god.id}
+                      type="button"
+                      onClick={() => toggleGod(god.id)}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
+                        active ? 'border-zinc-600 bg-zinc-800 text-zinc-100' : 'border-zinc-800 bg-transparent text-zinc-600 hover:text-zinc-400'
+                      }`}
+                    >
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: active ? god.color : '#52525b' }} />
+                      {god.name}
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          </div>
+
+          <div className="space-y-8">
+            {visibleGods.length === 0 && (
+              <p className="rounded-xl border border-dashed border-zinc-800 p-10 text-center text-sm italic text-zinc-600">
+                Select at least one god to browse their boons.
+              </p>
+            )}
+            {visibleGods.map((god) => {
+              const cores = boonsForGod(god.id).filter((b) => b.type === 'core')
+              return (
+                <section key={god.id}>
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                    <span className="relative top-[-2px] h-2.5 w-2.5 rounded-full" style={{ backgroundColor: god.color }} />
+                    <h2 className="font-serif text-lg text-zinc-100">{god.name}</h2>
+                    <span className="text-[11px] uppercase tracking-widest text-zinc-600">{god.title}</span>
+                  </div>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {cores.map((boon: Boon) => {
+                      const missing = unmetGroups(boon, owned)
+                      return (
+                        <BoonCard
+                          key={boon.id}
+                          boon={boon}
+                          picked={owned.has(boon.id)}
+                          dimmed={missing.length > 0}
+                          missingGroups={missing}
+                          onClick={() => setBuild(toggleBoon(build, boon))}
+                        />
+                      )
+                    })}
+                  </div>
+                </section>
+              )
+            })}
+          </div>
+
+          <div className="space-y-4">
+            <SuggestionPanel items={suggs} onPick={pickById} />
+            <StatusPanel
+              build={build}
+              activeGods={activeGods}
+              candidates={candidates}
+              onBuildChange={setBuild}
+              onReset={() => setBuild(EMPTY_BUILD)}
+            />
+            <ArcanaPanel />
+            <CursePanel />
+          </div>
+        </div>
+
+        <footer className="pt-4 text-center text-[11px] leading-relaxed text-zinc-700">
+          Seed data v0.3 — all 12 Olympians' boons, 37 duos, all Nocturnal Arms, god keepsakes &amp; the Wheel of Fate, curated from hades.fandom.com.
+          Values are common-rarity approximations; re-verify after game patches.
+        </footer>
+      </main>
+    </div>
+  )
+}
