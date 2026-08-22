@@ -1,5 +1,6 @@
 import type { Suggestion } from '../lib/build'
 import { GOD_BY_ID } from '../data/gods'
+import Icon from './Icon'
 
 interface Props {
   items: Suggestion[]
@@ -41,6 +42,7 @@ export default function SuggestionPanel({ items, onPick }: Props) {
           >
             <span className="flex items-center gap-1.5">
               <span className="w-4 shrink-0 text-[11px] tabular-nums text-zinc-600">{i + 1}</span>
+              <Icon id={item.boon.id} alt={item.boon.name} className="h-6 w-6" />
               {item.boon.gods.map((g) => {
                 const god = GOD_BY_ID.get(g)
                 return god ? <span key={g} className="h-2 w-2 rounded-full" style={{ backgroundColor: god.color }} title={god.name} /> : null

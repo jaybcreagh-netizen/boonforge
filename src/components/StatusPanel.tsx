@@ -7,6 +7,7 @@ import { KEEPSAKE_BY_ID } from '../data/keepsakes'
 import { encodeBuild } from '../lib/share'
 import { elementCounts, infusionProgress, ownedSet, toggleBoon } from '../lib/build'
 import type { UnlockCandidate } from '../lib/build'
+import Icon from './Icon'
 
 interface Props {
   build: BuildState
@@ -130,6 +131,7 @@ export default function StatusPanel({ build, activeGods, candidates, onBuildChan
               >
                 <span className="flex items-center justify-between gap-2">
                   <span className="flex flex-wrap items-center gap-1.5 text-sm text-zinc-200">
+                    <Icon id={boon.id} alt={boon.name} className="h-6 w-6" />
                     {boon.gods.map((g) => {
                       const god = GOD_BY_ID.get(g)
                       return god && activeGods.has(g) ? (

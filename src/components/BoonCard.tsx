@@ -1,6 +1,7 @@
 import type { Boon } from '../data/types'
 import { GOD_BY_ID } from '../data/gods'
 import { boonName } from '../data/boons'
+import Icon from './Icon'
 
 const ELEMENT_STYLE: Record<string, string> = {
   air: 'text-sky-300 border-sky-400/30 bg-sky-400/10',
@@ -33,6 +34,7 @@ export default function BoonCard({ boon, picked = false, dimmed = false, missing
     >
       <div className="flex items-start justify-between gap-2">
         <span className="flex flex-wrap items-center gap-1.5 font-medium text-zinc-100">
+          <Icon id={boon.id} alt={boon.name} className="h-7 w-7" />
           {boon.gods.map((g) => {
             const god = GOD_BY_ID.get(g)
             return god ? (

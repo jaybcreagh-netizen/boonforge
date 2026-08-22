@@ -1,5 +1,6 @@
 import type { BuildState, WeaponId } from '../data/types'
 import { WEAPONS, WEAPON_BY_ID } from '../data/weapons'
+import Icon from './Icon'
 
 interface Props {
   build: BuildState
@@ -19,12 +20,13 @@ export default function WeaponPanel({ build, onSelectWeapon, onSelectAspect }: P
             key={w.id}
             type="button"
             onClick={() => onSelectWeapon(w.id)}
-            className={`rounded-lg border px-2.5 py-2 text-sm transition ${
+            className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition ${
               build.weaponId === w.id
                 ? 'border-amber-400/70 bg-amber-400/10 text-amber-100'
                 : 'border-zinc-800 bg-zinc-900/70 text-zinc-300 hover:border-zinc-600'
             }`}
           >
+            <Icon id={w.id} alt={w.name} className="h-7 w-7" />
             {w.name}
           </button>
         ))}

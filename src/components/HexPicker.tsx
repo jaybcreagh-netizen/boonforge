@@ -1,4 +1,5 @@
 import { HEXES, HEX_BY_ID } from '../data/hexes'
+import Icon from './Icon'
 
 interface Props {
   selected: string | null
@@ -26,10 +27,11 @@ export default function HexPicker({ selected, onSelect }: Props) {
               type="button"
               onClick={() => onSelect(active ? null : hex.id)}
               title={hex.effect}
-              className={`rounded-lg border px-2.5 py-2 text-left text-xs transition ${
+              className={`flex min-w-0 items-center gap-1.5 rounded-lg border px-2.5 py-2 text-left text-xs transition ${
                 active ? 'border-violet-400/70 bg-violet-400/10 text-violet-100' : 'border-zinc-800 bg-zinc-900/70 text-zinc-300 hover:border-zinc-600'
               }`}
             >
+              <Icon id={hex.id} alt={hex.name} className="h-6 w-6" />
               {hex.name}
             </button>
           )

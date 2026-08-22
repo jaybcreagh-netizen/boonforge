@@ -2,6 +2,7 @@ import { GODS } from '../data/gods'
 import { KEEPSAKES, KEEPSAKE_BY_ID } from '../data/keepsakes'
 import { MAX_KEEPSAKES } from '../data/types'
 import type { Keepsake } from '../data/types'
+import Icon from './Icon'
 
 interface Props {
   selected: string[]
@@ -43,7 +44,7 @@ export default function KeepsakePanel({ selected, onToggle }: Props) {
                   : 'border-zinc-800 bg-zinc-900/70 text-zinc-300 hover:border-zinc-600'
               } ${disabled ? 'cursor-not-allowed opacity-40' : ''}`}
             >
-              <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: god.color }} />
+              <Icon id={keepsake.id} alt={keepsake.name} className="h-6 w-6" />
               <span className="truncate">{keepsake.name}</span>
             </button>
           )

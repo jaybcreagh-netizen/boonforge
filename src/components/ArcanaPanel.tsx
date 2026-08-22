@@ -1,4 +1,5 @@
 import { ARCANA_CARDS, BOON_ODDS_CARD_IDS, MAX_GRASP } from '../data/arcana'
+import Icon from './Icon'
 
 export default function ArcanaPanel() {
   return (
@@ -13,7 +14,8 @@ export default function ArcanaPanel() {
         {ARCANA_CARDS.map((card) => (
           <div key={card.id} className="rounded-lg border border-zinc-800/70 bg-zinc-900/60 px-3 py-2">
             <div className="flex items-center gap-2">
-              <span className="w-8 shrink-0 text-right text-xs tabular-nums text-zinc-600">{card.numeral}</span>
+              <Icon id={card.id} alt={card.name} className="h-8 w-8 rounded" />
+              <span className="w-7 shrink-0 text-right text-xs tabular-nums text-zinc-600">{card.numeral}</span>
               <span className={`text-sm ${BOON_ODDS_CARD_IDS.has(card.id) ? 'text-emerald-200' : 'text-zinc-200'}`}>{card.name}</span>
               <span className="ml-auto flex shrink-0 gap-1">
                 {BOON_ODDS_CARD_IDS.has(card.id) && (
