@@ -8,8 +8,8 @@ const BUCKET_LABELS: Record<DamageReport['buckets'][number]['key'], string> = {
   omega: 'Omega Moves',
 }
 
-export default function DamagePanel({ pickedIds }: { pickedIds: string[] }) {
-  const report = damageReport(pickedIds)
+export default function DamagePanel({ pickedIds, arcanaIds = [] }: { pickedIds: string[]; arcanaIds?: string[] }) {
+  const report = damageReport(pickedIds, arcanaIds)
   const maxMult = Math.max(...report.buckets.map((b) => b.mult), 1.5)
 
   return (

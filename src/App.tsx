@@ -34,6 +34,7 @@ function loadBuild(): BuildState {
       pool: Array.isArray(parsed.pool)
         ? parsed.pool.filter((g): g is GodId => typeof g === 'string' && SEEDED_GOD_IDS.includes(g as GodId))
         : [],
+      arcana: Array.isArray(parsed.arcana) ? parsed.arcana.filter((id) => typeof id === 'string') : [],
     }
   } catch {
     return EMPTY_BUILD
@@ -122,6 +123,14 @@ export default function App() {
 
   const selectHex = (id: string | null) => {
     setBuild({ ...build, hexId: id })
+  }
+
+  const toggleArcana = (id: string) => {
+    if (build.arcana.includes(id)) {
+      setBuild({ ...build, arcana: build.arcana.filter((a) => a !== id) })
+    } else {
+      setBuild({ ...build, arcana: [...build.arcana, id] })
+    }
   }
 
   const seededGods = GODS.filter((g) => SEEDED_GOD_IDS.includes(g.id))
@@ -235,7 +244,7 @@ export default function App() {
               onBuildChange={setBuild}
               onReset={() => setBuild(EMPTY_BUILD)}
             />
-            <ArcanaPanel />
+            <ArcanaPanel selected={build.arcana} onToggle={toggleArcana} />
             <CursePanel />
           </div>
         </div>

@@ -13,6 +13,8 @@ export const GODS: GodInfo[] = [
   { id: 'artemis', name: 'Artemis', title: 'Goddess of the Hunt', color: '#86efac' },
   { id: 'athena', name: 'Athena', title: 'Goddess of Wisdom', color: '#bef264' },
   { id: 'hermes', name: 'Hermes', title: 'God of Swiftness', color: '#e5e5e5' },
+  { id: 'hades', name: 'Hades', title: 'God of the Underworld', color: '#a78bfa' },
+  { id: 'dionysus', name: 'Dionysus', title: 'God of Wine', color: '#e879f9' },
 ]
 
 export const GOD_BY_ID: Map<string, GodInfo> = new Map(GODS.map((g) => [g.id, g]))

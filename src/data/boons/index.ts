@@ -4,7 +4,9 @@ import { ARES_BOONS } from './ares'
 import { ARTEMIS_BOONS } from './artemis'
 import { ATHENA_BOONS } from './athena'
 import { DEMETER_BOONS } from './demeter'
+import { DIONYSUS_BOONS } from './dionysus'
 import { DUO_BOONS } from './duos'
+import { HADES_BOONS } from './hades'
 import { HEPHAESTUS_BOONS } from './hephaestus'
 import { HERA_BOONS } from './hera'
 import { HERMES_BOONS } from './hermes'
@@ -26,6 +28,8 @@ export const BOONS: Boon[] = [
   ...ARTEMIS_BOONS,
   ...ATHENA_BOONS,
   ...HERMES_BOONS,
+  ...HADES_BOONS,
+  ...DIONYSUS_BOONS,
   ...DUO_BOONS,
 ]
 

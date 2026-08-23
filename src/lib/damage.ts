@@ -1,5 +1,5 @@
 import { BOON_BY_ID } from '../data/boons'
-import { DAMAGE_TAGS } from '../data/damage-tags'
+import { ARCANA_DAMAGE_TAGS, DAMAGE_TAGS } from '../data/damage-tags'
 import type { DamageBucket, DamageTag } from '../data/damage-tags'
 import type { Element } from '../data/types'
 
@@ -20,10 +20,11 @@ export interface DamageReport {
 
 const BUCKET_KEYS: Array<BucketStat['key']> = ['attack', 'special', 'cast', 'omega']
 
-export function damageReport(pickedIds: string[]): DamageReport {
-  const stats = new Map<Exclude<DamageBucket, 'all'>, { bonus: number; shots: number; notes: Set<string>; allNotes: Set<string> }>(
-    BUCKET_KEYS.map((key) => [key, { bonus: 0, shots: 1, notes: new Set<string>(), allNotes: new Set<string>() }]),
-  )
+export function damageReport(pickedIds: string[], arcanaIds: string[] = []): DamageReport {
+  const stats = new Map<
+    Exclude<DamageBucket, 'all'>,
+    { bonus: number; shots: number; notes: Set<string> }
+  >(BUCKET_KEYS.map((key) => [key, { bonus: 0, shots: 1, notes: new Set<string>() }]))
   let critChance = 0
   const critNotes = new Set<string>()
   let vulnPct = 0
@@ -32,21 +33,28 @@ export function damageReport(pickedIds: string[]): DamageReport {
 
   const elementCounts: Record<Element, number> = { air: 0, water: 0, earth: 0, fire: 0 }
   const gods = new Set<string>()
-  const tags: Array<{ id: string; tag: DamageTag }> = []
+  const tags: DamageTag[] = []
 
   for (const id of pickedIds) {
     const boon = BOON_BY_ID.get(id)
     if (!boon) continue
     if (boon.element) elementCounts[boon.element]++
     for (const g of boon.gods) gods.add(g)
-    const tag = DAMAGE_TAGS[id]
-    if (tag) {
-      trackedCount++
-      tags.push({ id, tag })
+    const boonTags = DAMAGE_TAGS[id]
+    if (boonTags) {
+      trackedCount += boonTags.length
+      tags.push(...boonTags)
+    }
+  }
+  for (const id of arcanaIds) {
+    const arcanaTags = ARCANA_DAMAGE_TAGS[id]
+    if (arcanaTags) {
+      trackedCount += arcanaTags.length
+      tags.push(...arcanaTags)
     }
   }
 
-  for (const { tag } of tags) {
+  for (const tag of tags) {
     if (typeof tag.crit === 'number') {
       critChance += tag.crit
       if (tag.note) critNotes.add(tag.note)

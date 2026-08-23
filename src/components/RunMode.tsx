@@ -218,7 +218,7 @@ export default function RunMode({ build, onBuildChange }: Props) {
 
         <div className="space-y-4">
           <SuggestionPanel items={suggs.slice(0, 5)} onPick={pickById} />
-          <DamagePanel pickedIds={build.picked} />
+          <DamagePanel pickedIds={build.picked} arcanaIds={build.arcana} />
         </div>
       </div>
     </div>

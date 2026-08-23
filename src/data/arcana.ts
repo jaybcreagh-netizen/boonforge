@@ -31,3 +31,5 @@ export const ARCANA_CARDS: ArcanaCard[] = [
 ]
 
 export const BOON_ODDS_CARD_IDS = new Set(['excellence', 'the-queen', 'divinity', 'origination'])
+
+export const ARCANA_BY_ID: Map<string, ArcanaCard> = new Map(ARCANA_CARDS.map((c) => [c.id, c]))

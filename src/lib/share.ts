@@ -1,3 +1,4 @@
+import { ARCANA_BY_ID } from '../data/arcana'
 import { BOON_BY_ID } from '../data/boons'
 import { GODS } from '../data/gods'
 import { HEX_BY_ID } from '../data/hexes'
@@ -12,6 +13,7 @@ interface WirePayload {
   k?: unknown
   h?: unknown
   g?: unknown
+  c?: unknown
 }
 
 function encode(code: string): string {
@@ -30,7 +32,7 @@ function decode(text: string): string {
 }
 
 export function encodeBuild(build: BuildState): string {
-  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool }))
+  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool, c: build.arcana }))
 }
 
 export function decodeBuild(text: string): BuildState | null {
@@ -61,7 +63,11 @@ export function decodeBuild(text: string): BuildState | null {
       ? parsed.g.filter((g): g is GodId => typeof g === 'string' && validGodIds.has(g))
       : []
 
-    return { weaponId, aspectId, picked, keepsakes, hexId, pool }
+    const arcana = Array.isArray(parsed.c)
+      ? parsed.c.filter((id): id is string => typeof id === 'string' && ARCANA_BY_ID.has(id))
+      : []
+
+    return { weaponId, aspectId, picked, keepsakes, hexId, pool, arcana }
   } catch {
     return null
   }

@@ -19,6 +19,8 @@ export type GodId =
   | 'apollo'
   | 'artemis'
   | 'hermes'
+  | 'hades'
+  | 'dionysus'
 
 export const SEEDED_GOD_IDS: GodId[] = [
   'zeus',
@@ -33,6 +35,8 @@ export const SEEDED_GOD_IDS: GodId[] = [
   'artemis',
   'athena',
   'hermes',
+  'hades',
+  'dionysus',
 ]
 
 export interface Infusion {
@@ -115,6 +119,7 @@ export interface BuildState {
   keepsakes: string[]
   hexId: string | null
   pool: GodId[]
+  arcana: string[]
 }
 
 export const MAX_KEEPSAKES = 2
@@ -126,4 +131,5 @@ export const EMPTY_BUILD: BuildState = {
   keepsakes: [],
   hexId: null,
   pool: [],
+  arcana: [],
 }
