@@ -26,11 +26,13 @@ interface Props {
 }
 
 export default function BoonCard({ boon, picked = false, dimmed = false, missingGroups, score, reason, onClick }: Props) {
+  const primaryGod = GOD_BY_ID.get(boon.gods[0])
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`w-full rounded-lg border p-3 text-left transition ${
+      style={{ borderLeftColor: picked ? '#fbbf24' : primaryGod?.color ?? undefined }}
+      className={`w-full rounded-lg border border-l-[3px] p-3 text-left transition ${
         picked ? 'border-amber-400/70 bg-amber-400/10' : 'border-zinc-800 bg-zinc-900/70 hover:border-zinc-600'
       } ${dimmed ? 'opacity-50' : ''}`}
     >

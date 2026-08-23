@@ -177,7 +177,7 @@ export default function StatusPanel({ build, activeGods, candidates, onBuildChan
           onClick={onReset}
           className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-400 transition hover:border-red-400/60 hover:text-red-300"
         >
-          Reset run
+          Wipe everything (incl. weapon &amp; arcana)
         </button>
       </section>
     </div>

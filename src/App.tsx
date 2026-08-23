@@ -87,6 +87,23 @@ export default function App() {
     if (boon) setBuild(toggleBoon(build, boon))
   }
 
+  const [confirmNewRun, setConfirmNewRun] = useState(false)
+
+  useEffect(() => {
+    if (!confirmNewRun) return
+    const timer = setTimeout(() => setConfirmNewRun(false), 2500)
+    return () => clearTimeout(timer)
+  }, [confirmNewRun])
+
+  const startNewRun = () => {
+    if (!confirmNewRun) {
+      setConfirmNewRun(true)
+      return
+    }
+    setConfirmNewRun(false)
+    setBuild({ ...EMPTY_BUILD, weaponId: build.weaponId, aspectId: build.aspectId, arcana: build.arcana })
+  }
+
   const selectWeapon = (id: WeaponId) => {
     const keepsAspect = WEAPON_BY_ID.get(id)?.aspects.some((a) => a.id === build.aspectId) ?? false
     setBuild({ ...build, weaponId: id, aspectId: keepsAspect ? build.aspectId : null })
@@ -155,28 +172,42 @@ export default function App() {
   const visibleGods = seededGods.filter((g) => activeGods.has(g.id))
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200">
-      <header className="border-b border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950">
+    <div className="min-h-screen text-zinc-200">
+      <header className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <div>
-            <h1 className="font-serif text-2xl font-bold tracking-wide text-amber-100">BoonForge</h1>
+            <h1 className="font-display text-2xl font-bold tracking-[0.12em] text-amber-100">BoonForge</h1>
             <p className="mt-0.5 text-sm text-zinc-500">
               {mode === 'plan' ? 'Hades II build companion — plan boons, chase duos, forge your run.' : 'Live run — log what spawns, follow the highlights.'}
             </p>
           </div>
-          <div className="flex gap-1 rounded-lg border border-zinc-700 bg-zinc-900 p-1">
-            {(['plan', 'run'] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${
-                  mode === m ? 'bg-amber-400/15 text-amber-100' : 'text-zinc-500 hover:text-zinc-300'
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 rounded-lg border border-zinc-700 bg-zinc-900 p-1">
+              {(['plan', 'run'] as const).map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setMode(m)}
+                  className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${
+                    mode === m ? 'bg-amber-400/15 text-amber-100' : 'text-zinc-500 hover:text-zinc-300'
+                  }`}
+                >
+                  {m}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={startNewRun}
+              title="Keeps your weapon, aspect and Wheel of Fate — clears everything else"
+              className={`rounded-lg border px-4 py-2 text-sm font-semibold tracking-wide transition ${
+                confirmNewRun
+                  ? 'border-red-400/60 bg-red-400/10 text-red-200'
+                  : 'border-amber-400/40 bg-gradient-to-b from-amber-400/15 to-transparent text-amber-200 hover:border-amber-300/70'
+              }`}
+            >
+              {confirmNewRun ? 'Certain?' : 'New Run'}
+            </button>
           </div>
         </div>
       </header>
@@ -274,9 +305,10 @@ export default function App() {
           </>
         )}
 
+        <div className="ornament mx-auto max-w-md" />
         <footer className="pt-4 text-center text-[11px] leading-relaxed text-zinc-700">
-          Seed data v0.4 — all 12 Olympians' boons, 37 duos, all Nocturnal Arms, keepsakes, hexes &amp; the Wheel of Fate — curated from hades.fandom.com.
-          Values are common-rarity approximations; re-verify after game patches.
+          Forged in the House of Hades — seed data v0.5, transcribed from hades.fandom.com.
+          Common-rarity approximations throughout; re-verify after game patches.
         </footer>
       </main>
     </div>
