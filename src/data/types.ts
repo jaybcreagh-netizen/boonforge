@@ -114,6 +114,7 @@ export interface BuildState {
   picked: string[]
   keepsakes: string[]
   hexId: string | null
+  pool: GodId[]
 }
 
 export const MAX_KEEPSAKES = 2
@@ -124,4 +125,5 @@ export const EMPTY_BUILD: BuildState = {
   picked: [],
   keepsakes: [],
   hexId: null,
+  pool: [],
 }

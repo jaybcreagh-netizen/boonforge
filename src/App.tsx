@@ -31,6 +31,9 @@ function loadBuild(): BuildState {
       picked: Array.isArray(parsed.picked) ? parsed.picked.filter((id) => typeof id === 'string') : [],
       keepsakes: Array.isArray(parsed.keepsakes) ? parsed.keepsakes.filter((id) => typeof id === 'string') : [],
       hexId: typeof parsed.hexId === 'string' ? parsed.hexId : null,
+      pool: Array.isArray(parsed.pool)
+        ? parsed.pool.filter((g): g is GodId => typeof g === 'string' && SEEDED_GOD_IDS.includes(g as GodId))
+        : [],
     }
   } catch {
     return EMPTY_BUILD

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import type { Boon, BuildState, GodId } from '../data/types'
-import { SEEDED_GOD_IDS } from '../data/types'
 import { GODS } from '../data/gods'
-import { boonsForGod, BOON_BY_ID } from '../data/boons'
-import { ownedSet, slotPick, suggestionReason, suggestions, toggleBoon, unlockCandidates, unmetGroups } from '../lib/build'
+import { BOON_BY_ID, boonsForGod } from '../data/boons'
+import { KEEPSAKE_BY_ID } from '../data/keepsakes'
+import { effectivePool, ownedSet, slotPick, suggestionReason, suggestions, toggleBoon, unlockCandidates, unmetGroups } from '../lib/build'
 import SlotBar from './SlotBar'
 import BoonCard from './BoonCard'
 import SuggestionPanel from './SuggestionPanel'
@@ -19,14 +19,27 @@ const SLOT_ORDER: Record<string, number> = { attack: 0, special: 1, cast: 2, spr
 
 export default function RunMode({ build, onBuildChange }: Props) {
   const [spawnGod, setSpawnGod] = useState<GodId | null>(null)
+  const [editingPool, setEditingPool] = useState(false)
   const owned = ownedSet(build)
 
+  const pool = useMemo(() => effectivePool(build), [build])
+  const keepsakeGods = useMemo(() => {
+    const set = new Set<GodId>()
+    for (const id of build.keepsakes) {
+      const keepsake = KEEPSAKE_BY_ID.get(id)
+      if (keepsake && !build.pool.includes(keepsake.god)) set.add(keepsake.god)
+    }
+    return set
+  }, [build.keepsakes, build.pool])
+
+  const activeSpawn = spawnGod && pool.has(spawnGod) ? spawnGod : null
+
   const suggs = useMemo(
-    () => suggestions(build.picked, new Set(SEEDED_GOD_IDS), build.aspectId, 300),
-    [build.picked, build.aspectId],
+    () => suggestions(build.picked, pool, build.aspectId, 300),
+    [build.picked, pool, build.aspectId],
   )
   const suggById = useMemo(() => new Map(suggs.map((s) => [s.boon.id, s])), [suggs])
-  const candidates = useMemo(() => unlockCandidates(build.picked, new Set(SEEDED_GOD_IDS)), [build.picked])
+  const candidates = useMemo(() => unlockCandidates(build.picked, pool), [build.picked, pool])
 
   const picks = {
     attack: slotPick(build, 'attack'),
@@ -38,21 +51,27 @@ export default function RunMode({ build, onBuildChange }: Props) {
   const pickedPaths = candidates.filter((c) => owned.has(c.boon.id))
   const closePaths = candidates.filter((c) => !c.ready && !owned.has(c.boon.id)).slice(0, 3)
 
-  const pickById = (id: string) => {
-    const boon = BOON_BY_ID.get(id)
-    if (boon) onBuildChange(toggleBoon(build, boon))
-  }
-
   const offers: Boon[] = useMemo(() => {
-    if (!spawnGod) return []
-    return boonsForGod(spawnGod)
+    if (!activeSpawn) return []
+    return boonsForGod(activeSpawn)
       .filter((b) => b.type === 'core')
       .sort(
         (a, b) =>
           (suggById.get(b.id)?.score ?? 0) - (suggById.get(a.id)?.score ?? 0) ||
           SLOT_ORDER[a.slot] - SLOT_ORDER[b.slot],
       )
-  }, [spawnGod, suggById])
+  }, [activeSpawn, suggById])
+
+  const pickById = (id: string) => {
+    const boon = BOON_BY_ID.get(id)
+    if (boon) onBuildChange(toggleBoon(build, boon))
+  }
+
+  const togglePoolGod = (id: GodId) => {
+    if (keepsakeGods.has(id)) return
+    const next = build.pool.includes(id) ? build.pool.filter((g) => g !== id) : [...build.pool, id]
+    onBuildChange({ ...build, pool: next })
+  }
 
   return (
     <div className="space-y-6">
@@ -67,9 +86,55 @@ export default function RunMode({ build, onBuildChange }: Props) {
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">
           <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
+            <div className="flex items-baseline justify-between gap-2">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-amber-200/80">Run Pool</h2>
+              <button type="button" onClick={() => setEditingPool((v) => !v)} className="text-[10px] uppercase tracking-wider text-zinc-500 hover:text-zinc-300">
+                {editingPool ? 'Done' : 'Edit'}
+              </button>
+            </div>
+            {!editingPool ? (
+              <p className="mt-2 text-[11px] leading-relaxed text-zinc-600">
+                {pool.size === GODS.length
+                  ? 'Full roster — narrow this to the gods actually in your run for honest suggestions.'
+                  : `${pool.size} god${pool.size === 1 ? '' : 's'} in play${keepsakeGods.size > 0 ? ` (incl. ${keepsakeGods.size} via keepsake${keepsakeGods.size > 1 ? 's' : ''})` : ''}.`}
+              </p>
+            ) : null}
+            {(editingPool || pool.size < GODS.length || keepsakeGods.size > 0) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {GODS.map((god) => {
+                  const member = pool.has(god.id)
+                  const viaKeepsake = keepsakeGods.has(god.id)
+                  if (!editingPool && !member) return null
+                  return (
+                    <button
+                      key={god.id}
+                      type="button"
+                      onClick={() => togglePoolGod(god.id)}
+                      disabled={!editingPool}
+                      title={viaKeepsake ? `${god.name} — in pool via keepsake` : editingPool ? `Toggle ${god.name} in pool` : god.name}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
+                        member ? 'border-zinc-600 bg-zinc-800 text-zinc-100' : 'border-dashed border-zinc-800 bg-transparent text-zinc-600 hover:text-zinc-400'
+                      } ${!editingPool ? 'cursor-default' : ''}`}
+                    >
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: member ? god.color : '#3f3f46' }} />
+                      {god.name}
+                      {viaKeepsake && <span className="text-[9px] uppercase tracking-wide text-sky-300/80">ks</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            {editingPool && (
+              <p className="mt-2 text-[10px] italic text-zinc-700">
+                Gods joined via their keepsakes stay locked in while that keepsake is equipped.
+              </p>
+            )}
+          </section>
+
+          <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-amber-200/80">What spawned?</h2>
             <div className="mt-3 flex flex-wrap gap-2">
-              {GODS.map((god) => {
+              {GODS.filter((g) => pool.has(g.id)).map((god) => {
                 const active = spawnGod === god.id
                 return (
                   <button
@@ -87,7 +152,7 @@ export default function RunMode({ build, onBuildChange }: Props) {
               })}
             </div>
 
-            {spawnGod ? (
+            {activeSpawn ? (
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {offers.map((boon) => {
                   const sugg = suggById.get(boon.id)
@@ -109,7 +174,7 @@ export default function RunMode({ build, onBuildChange }: Props) {
               </div>
             ) : (
               <p className="mt-4 text-xs italic text-zinc-600">
-                Tap the god whose screen you're on — offerings are sorted with the strongest synergy picks first.
+                Tap a pool god whose screen you're on — offerings are sorted with the strongest synergy picks first.
               </p>
             )}
           </section>

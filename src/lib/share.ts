@@ -1,7 +1,8 @@
 import { BOON_BY_ID } from '../data/boons'
+import { GODS } from '../data/gods'
 import { HEX_BY_ID } from '../data/hexes'
 import { KEEPSAKE_BY_ID } from '../data/keepsakes'
-import type { BuildState, WeaponId } from '../data/types'
+import type { BuildState, GodId, WeaponId } from '../data/types'
 import { WEAPONS } from '../data/weapons'
 
 interface WirePayload {
@@ -10,6 +11,7 @@ interface WirePayload {
   p?: unknown
   k?: unknown
   h?: unknown
+  g?: unknown
 }
 
 function encode(code: string): string {
@@ -28,7 +30,7 @@ function decode(text: string): string {
 }
 
 export function encodeBuild(build: BuildState): string {
-  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId }))
+  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool }))
 }
 
 export function decodeBuild(text: string): BuildState | null {
@@ -54,7 +56,12 @@ export function decodeBuild(text: string): BuildState | null {
 
     const hexId = typeof parsed.h === 'string' && HEX_BY_ID.has(parsed.h) ? parsed.h : null
 
-    return { weaponId, aspectId, picked, keepsakes, hexId }
+    const validGodIds = new Set(GODS.map((g) => g.id as string))
+    const pool = Array.isArray(parsed.g)
+      ? parsed.g.filter((g): g is GodId => typeof g === 'string' && validGodIds.has(g))
+      : []
+
+    return { weaponId, aspectId, picked, keepsakes, hexId, pool }
   } catch {
     return null
   }

@@ -1,10 +1,21 @@
 import { BOON_BY_ID, BOONS } from '../data/boons'
+import { KEEPSAKE_BY_ID } from '../data/keepsakes'
 import { aspectById } from '../data/weapons'
-import type { Boon, BoonSlot, BuildState, Element, Infusion } from '../data/types'
-import { ELEMENTS } from '../data/types'
+import type { Boon, BoonSlot, BuildState, Element, GodId, Infusion } from '../data/types'
+import { ELEMENTS, SEEDED_GOD_IDS } from '../data/types'
 
 export function ownedSet(build: BuildState): Set<string> {
   return new Set(build.picked)
+}
+
+/** Gods reachable this run: the declared pool plus gods pulled in via their keepsakes. */
+export function effectivePool(build: BuildState): Set<GodId> {
+  const pool = new Set<GodId>(build.pool)
+  for (const id of build.keepsakes) {
+    const keepsake = KEEPSAKE_BY_ID.get(id)
+    if (keepsake) pool.add(keepsake.god)
+  }
+  return pool.size > 0 ? pool : new Set<GodId>(SEEDED_GOD_IDS)
 }
 
 export function slotPick(build: BuildState, slot: BoonSlot): Boon | null {
