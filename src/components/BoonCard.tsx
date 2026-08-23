@@ -20,10 +20,12 @@ interface Props {
   picked?: boolean
   dimmed?: boolean
   missingGroups?: string[][]
+  score?: number
+  reason?: string
   onClick?: () => void
 }
 
-export default function BoonCard({ boon, picked = false, dimmed = false, missingGroups, onClick }: Props) {
+export default function BoonCard({ boon, picked = false, dimmed = false, missingGroups, score, reason, onClick }: Props) {
   return (
     <button
       type="button"
@@ -44,6 +46,11 @@ export default function BoonCard({ boon, picked = false, dimmed = false, missing
           {boon.name}
         </span>
         <span className="flex shrink-0 items-center gap-1">
+          {typeof score === 'number' && score > 0 && (
+            <span className="rounded border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-emerald-300">
+              +{score}
+            </span>
+          )}
           {boon.infusion && (
             <span className="rounded border border-zinc-600/50 bg-zinc-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-zinc-300">
               Infusion
@@ -62,6 +69,7 @@ export default function BoonCard({ boon, picked = false, dimmed = false, missing
         </span>
       </div>
       <p className="mt-1 text-xs leading-relaxed text-zinc-400">{boon.description}</p>
+      {reason && <p className="mt-1 text-[11px] font-medium leading-relaxed text-emerald-300/90">{reason}</p>}
       {missingGroups && missingGroups.length > 0 && (
         <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">
           Needs{' '}

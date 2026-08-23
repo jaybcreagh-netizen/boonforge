@@ -87,6 +87,22 @@ export interface Suggestion {
   fitsAspect?: string
 }
 
+export function suggestionReason(item: Suggestion): string[] {
+  const reasons = item.unlocks.map((u) => `Unlocks ${u.name}`)
+  if (item.progressCount > 0) {
+    reasons.push(`Advances ${item.progressCount} path${item.progressCount > 1 ? 's' : ''}`)
+  }
+  for (const fill of item.infusionFills) {
+    reasons.push(
+      fill.element === 'any'
+        ? `Any-element progress for ${fill.name}`
+        : `${fill.element.charAt(0).toUpperCase()}${fill.element.slice(1)} for ${fill.name}`,
+    )
+  }
+  if (item.fitsAspect) reasons.push(`Fits ${item.fitsAspect}`)
+  return reasons
+}
+
 export function suggestions(pickedIds: string[], activeGods: Set<string>, aspectId?: string | null, limit = 5): Suggestion[] {
   const owned = new Set(pickedIds)
   const counts = elementCounts(pickedIds)

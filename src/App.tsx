@@ -16,6 +16,7 @@ import SlotBar from './components/SlotBar'
 import HistoryStrip from './components/HistoryStrip'
 import StatusPanel from './components/StatusPanel'
 import BoonCard from './components/BoonCard'
+import RunMode from './components/RunMode'
 
 const STORAGE_KEY = 'boonforge.build.v1'
 
@@ -45,6 +46,7 @@ function loadSharedBuild(): BuildState | null {
 export default function App() {
   const [build, setBuild] = useState<BuildState>(() => loadSharedBuild() ?? loadBuild())
   const [activeGods, setActiveGods] = useState<Set<GodId>>(() => new Set<GodId>(['zeus', 'hestia', 'apollo']))
+  const [mode, setMode] = useState<'plan' | 'run'>('plan')
 
   useEffect(() => {
     if (new URLSearchParams(window.location.search).has('b')) {
@@ -125,15 +127,37 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200">
       <header className="border-b border-zinc-800 bg-gradient-to-b from-zinc-900 to-zinc-950">
-        <div className="mx-auto max-w-7xl px-4 py-5">
-          <h1 className="font-serif text-2xl font-bold tracking-wide text-amber-100">BoonForge</h1>
-          <p className="mt-0.5 text-sm text-zinc-500">Hades II build companion — plan boons, chase duos, forge your run.</p>
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
+          <div>
+            <h1 className="font-serif text-2xl font-bold tracking-wide text-amber-100">BoonForge</h1>
+            <p className="mt-0.5 text-sm text-zinc-500">
+              {mode === 'plan' ? 'Hades II build companion — plan boons, chase duos, forge your run.' : 'Live run — log what spawns, follow the highlights.'}
+            </p>
+          </div>
+          <div className="flex gap-1 rounded-lg border border-zinc-700 bg-zinc-900 p-1">
+            {(['plan', 'run'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className={`rounded-md px-4 py-1.5 text-sm font-medium capitalize transition ${
+                  mode === m ? 'bg-amber-400/15 text-amber-100' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6">
-        <SlotBar picks={picks} onClear={clearSlot} />
-        <HistoryStrip picked={build.picked} onUndo={() => setBuild({ ...build, picked: build.picked.slice(0, -1) })} />
+        {mode === 'run' ? (
+          <RunMode build={build} onBuildChange={setBuild} />
+        ) : (
+          <>
+            <SlotBar picks={picks} onClear={clearSlot} />
+            <HistoryStrip picked={build.picked} onUndo={() => setBuild({ ...build, picked: build.picked.slice(0, -1) })} />
 
         <div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)_320px]">
           <div className="space-y-4">
@@ -212,9 +236,11 @@ export default function App() {
             <CursePanel />
           </div>
         </div>
+          </>
+        )}
 
         <footer className="pt-4 text-center text-[11px] leading-relaxed text-zinc-700">
-          Seed data v0.3 — all 12 Olympians' boons, 37 duos, all Nocturnal Arms, god keepsakes &amp; the Wheel of Fate, curated from hades.fandom.com.
+          Seed data v0.4 — all 12 Olympians' boons, 37 duos, all Nocturnal Arms, keepsakes, hexes &amp; the Wheel of Fate — curated from hades.fandom.com.
           Values are common-rarity approximations; re-verify after game patches.
         </footer>
       </main>

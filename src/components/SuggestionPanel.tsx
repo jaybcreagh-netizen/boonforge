@@ -1,26 +1,11 @@
 import type { Suggestion } from '../lib/build'
+import { suggestionReason } from '../lib/build'
 import { GOD_BY_ID } from '../data/gods'
 import Icon from './Icon'
 
 interface Props {
   items: Suggestion[]
   onPick: (id: string) => void
-}
-
-function reasonLine(item: Suggestion): string[] {
-  const reasons = item.unlocks.map((u) => `Unlocks ${u.name}`)
-  if (item.progressCount > 0) {
-    reasons.push(`Advances ${item.progressCount} locked path${item.progressCount > 1 ? 's' : ''}`)
-  }
-  for (const fill of item.infusionFills) {
-    reasons.push(
-      fill.element === 'any'
-        ? `Any-element progress for ${fill.name}`
-        : `${fill.element.charAt(0).toUpperCase()}${fill.element.slice(1)} for ${fill.name}`,
-    )
-  }
-  if (item.fitsAspect) reasons.push(`Fits ${item.fitsAspect}`)
-  return reasons
 }
 
 export default function SuggestionPanel({ items, onPick }: Props) {
@@ -52,7 +37,7 @@ export default function SuggestionPanel({ items, onPick }: Props) {
                 +{item.score}
               </span>
             </span>
-            <span className="mt-0.5 block pl-6 text-[11px] leading-relaxed text-zinc-500">{reasonLine(item).join(' · ')}</span>
+            <span className="mt-0.5 block pl-6 text-[11px] leading-relaxed text-zinc-500">{suggestionReason(item).join(' · ')}</span>
           </button>
         ))}
       </div>
