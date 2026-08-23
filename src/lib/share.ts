@@ -1,6 +1,7 @@
 import { ARCANA_BY_ID } from '../data/arcana'
 import { BOON_BY_ID } from '../data/boons'
 import { GODS } from '../data/gods'
+import { HAMMERS_BY_WEAPON } from '../data/hammers'
 import { HEX_BY_ID } from '../data/hexes'
 import { KEEPSAKE_BY_ID } from '../data/keepsakes'
 import type { BuildState, GodId, WeaponId } from '../data/types'
@@ -14,6 +15,8 @@ interface WirePayload {
   h?: unknown
   g?: unknown
   c?: unknown
+  m?: unknown
+  n?: unknown
 }
 
 function encode(code: string): string {
@@ -32,7 +35,7 @@ function decode(text: string): string {
 }
 
 export function encodeBuild(build: BuildState): string {
-  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool, c: build.arcana }))
+  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool, c: build.arcana, m: build.hammers, n: build.hexNodes }))
 }
 
 export function decodeBuild(text: string): BuildState | null {
@@ -67,7 +70,16 @@ export function decodeBuild(text: string): BuildState | null {
       ? parsed.c.filter((id): id is string => typeof id === 'string' && ARCANA_BY_ID.has(id))
       : []
 
-    return { weaponId, aspectId, picked, keepsakes, hexId, pool, arcana }
+    const validHammerIds = new Set(Object.values(HAMMERS_BY_WEAPON).flat().map((h) => h.id))
+    const hammers = Array.isArray(parsed.m)
+      ? parsed.m.filter((id): id is string => typeof id === 'string' && validHammerIds.has(id))
+      : []
+
+    const hexNodes = Array.isArray(parsed.n)
+      ? parsed.n.filter((id): id is string => typeof id === 'string')
+      : []
+
+    return { weaponId, aspectId, picked, keepsakes, hexId, pool, arcana, hammers, hexNodes }
   } catch {
     return null
   }

@@ -1,15 +1,20 @@
+import { useMemo, useState } from 'react'
 import type { BuildState, WeaponId } from '../data/types'
 import { WEAPONS, WEAPON_BY_ID } from '../data/weapons'
+import { HAMMERS_BY_WEAPON } from '../data/hammers'
 import Icon from './Icon'
 
 interface Props {
   build: BuildState
   onSelectWeapon: (id: WeaponId) => void
   onSelectAspect: (id: string | null) => void
+  onToggleHammer: (id: string) => void
 }
 
-export default function WeaponPanel({ build, onSelectWeapon, onSelectAspect }: Props) {
+export default function WeaponPanel({ build, onSelectWeapon, onSelectAspect, onToggleHammer }: Props) {
+  const [showHammers, setShowHammers] = useState(false)
   const weapon = build.weaponId ? WEAPON_BY_ID.get(build.weaponId) : undefined
+  const hammers = useMemo(() => (build.weaponId ? HAMMERS_BY_WEAPON[build.weaponId] ?? [] : []), [build.weaponId])
 
   return (
     <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
@@ -67,6 +72,47 @@ export default function WeaponPanel({ build, onSelectWeapon, onSelectAspect }: P
         </div>
       ) : (
         <p className="mt-4 text-xs italic text-zinc-600">Select a weapon to see its aspects.</p>
+      )}
+
+      {weapon && hammers.length > 0 && (
+        <div className="mt-4 border-t border-zinc-800 pt-3">
+          <button
+            type="button"
+            onClick={() => setShowHammers((v) => !v)}
+            className="flex w-full items-baseline justify-between text-left"
+          >
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-amber-200/60">Daedalus Hammers</h3>
+            <span className="text-[10px] uppercase tracking-wider text-zinc-600">
+              {build.hammers.length} taken · {showHammers ? 'hide' : 'show'}
+            </span>
+          </button>
+          {showHammers && (
+            <>
+              <p className="mt-1.5 text-[10px] italic text-zinc-700">You'll see 2 hammer offers per run — mark the ones you grabbed.</p>
+              <div className="mt-2 max-h-72 space-y-1.5 overflow-y-auto pr-1">
+                {hammers.map((hammer) => {
+                  const active = build.hammers.includes(hammer.id)
+                  return (
+                    <button
+                      key={hammer.id}
+                      type="button"
+                      onClick={() => onToggleHammer(hammer.id)}
+                      title={hammer.effect}
+                      className={`flex w-full items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left text-xs transition ${
+                        active
+                          ? 'border-orange-400/70 bg-orange-400/10 text-orange-100'
+                          : 'border-zinc-800 bg-zinc-900/70 text-zinc-300 hover:border-zinc-600'
+                      }`}
+                    >
+                      <Icon id={hammer.id} alt={hammer.name} className="h-5 w-5" />
+                      <span className="truncate">{hammer.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </section>
   )

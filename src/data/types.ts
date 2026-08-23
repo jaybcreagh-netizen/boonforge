@@ -120,6 +120,8 @@ export interface BuildState {
   hexId: string | null
   pool: GodId[]
   arcana: string[]
+  hammers: string[]
+  hexNodes: string[]
 }
 
 export const MAX_KEEPSAKES = 2
@@ -132,4 +134,6 @@ export const EMPTY_BUILD: BuildState = {
   hexId: null,
   pool: [],
   arcana: [],
+  hammers: [],
+  hexNodes: [],
 }

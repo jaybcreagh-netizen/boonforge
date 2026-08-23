@@ -35,6 +35,8 @@ function loadBuild(): BuildState {
         ? parsed.pool.filter((g): g is GodId => typeof g === 'string' && SEEDED_GOD_IDS.includes(g as GodId))
         : [],
       arcana: Array.isArray(parsed.arcana) ? parsed.arcana.filter((id) => typeof id === 'string') : [],
+      hammers: Array.isArray(parsed.hammers) ? parsed.hammers.filter((id) => typeof id === 'string') : [],
+      hexNodes: Array.isArray(parsed.hexNodes) ? parsed.hexNodes.filter((id) => typeof id === 'string') : [],
     }
   } catch {
     return EMPTY_BUILD
@@ -122,7 +124,7 @@ export default function App() {
   }
 
   const selectHex = (id: string | null) => {
-    setBuild({ ...build, hexId: id })
+    setBuild({ ...build, hexId: id, hexNodes: [] })
   }
 
   const toggleArcana = (id: string) => {
@@ -130,6 +132,22 @@ export default function App() {
       setBuild({ ...build, arcana: build.arcana.filter((a) => a !== id) })
     } else {
       setBuild({ ...build, arcana: [...build.arcana, id] })
+    }
+  }
+
+  const toggleHammer = (id: string) => {
+    if (build.hammers.includes(id)) {
+      setBuild({ ...build, hammers: build.hammers.filter((h) => h !== id) })
+    } else {
+      setBuild({ ...build, hammers: [...build.hammers, id] })
+    }
+  }
+
+  const toggleHexNode = (name: string) => {
+    if (build.hexNodes.includes(name)) {
+      setBuild({ ...build, hexNodes: build.hexNodes.filter((n) => n !== name) })
+    } else {
+      setBuild({ ...build, hexNodes: [...build.hexNodes, name] })
     }
   }
 
@@ -173,9 +191,14 @@ export default function App() {
 
         <div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)_320px]">
           <div className="space-y-4">
-            <WeaponPanel build={build} onSelectWeapon={selectWeapon} onSelectAspect={selectAspect} />
+            <WeaponPanel
+              build={build}
+              onSelectWeapon={selectWeapon}
+              onSelectAspect={selectAspect}
+              onToggleHammer={toggleHammer}
+            />
             <KeepsakePanel selected={build.keepsakes} onToggle={toggleKeepsake} />
-            <HexPicker selected={build.hexId} onSelect={selectHex} />
+            <HexPicker selected={build.hexId} onSelect={selectHex} onToggleNode={toggleHexNode} pickedNodes={build.hexNodes} />
 
             <section className="rounded-xl border border-zinc-800 bg-zinc-900/40 p-4">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-amber-200/80">Boon Givers</h2>
