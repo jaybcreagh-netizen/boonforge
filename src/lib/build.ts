@@ -34,6 +34,26 @@ export function isAvailable(boon: Boon, owned: Set<string>): boolean {
   return unmetGroups(boon, owned).length === 0
 }
 
+export interface SwapImpact {
+  displaced: Boon | null
+  brokenPaths: Boon[]
+}
+
+export function swapImpact(build: BuildState, incoming: Boon): SwapImpact {
+  if (incoming.slot === 'none') return { displaced: null, brokenPaths: [] }
+  const displaced = slotPick(build, incoming.slot)
+  if (!displaced || displaced.id === incoming.id) return { displaced: null, brokenPaths: [] }
+  const withoutDisplaced = build.picked.filter((id) => id !== displaced.id)
+  const nextSet = new Set([...withoutDisplaced, incoming.id])
+  const owned = new Set(build.picked)
+  const brokenPaths: Boon[] = []
+  for (const boon of BOON_BY_ID.values()) {
+    if (boon.type === 'core') continue
+    if (isAvailable(boon, owned) && !isAvailable(boon, nextSet)) brokenPaths.push(boon)
+  }
+  return { displaced, brokenPaths }
+}
+
 export function toggleBoon(build: BuildState, target: Boon): BuildState {
   if (build.picked.includes(target.id)) {
     return { ...build, picked: build.picked.filter((id) => id !== target.id) }

@@ -1,5 +1,5 @@
 import { BOON_BY_ID } from '../data/boons'
-import { ARCANA_DAMAGE_TAGS, DAMAGE_TAGS } from '../data/damage-tags'
+import { ARCANA_DAMAGE_TAGS, DAMAGE_TAGS, HAMMER_DAMAGE_TAGS } from '../data/damage-tags'
 import type { DamageBucket, DamageTag } from '../data/damage-tags'
 import type { Element } from '../data/types'
 
@@ -20,7 +20,7 @@ export interface DamageReport {
 
 const BUCKET_KEYS: Array<BucketStat['key']> = ['attack', 'special', 'cast', 'omega']
 
-export function damageReport(pickedIds: string[], arcanaIds: string[] = []): DamageReport {
+export function damageReport(pickedIds: string[], arcanaIds: string[] = [], hammerIds: string[] = []): DamageReport {
   const stats = new Map<
     Exclude<DamageBucket, 'all'>,
     { bonus: number; shots: number; notes: Set<string> }
@@ -51,6 +51,13 @@ export function damageReport(pickedIds: string[], arcanaIds: string[] = []): Dam
     if (arcanaTags) {
       trackedCount += arcanaTags.length
       tags.push(...arcanaTags)
+    }
+  }
+  for (const id of hammerIds) {
+    const hammerTags = HAMMER_DAMAGE_TAGS[id]
+    if (hammerTags) {
+      trackedCount += hammerTags.length
+      tags.push(...hammerTags)
     }
   }
 

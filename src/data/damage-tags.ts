@@ -67,3 +67,46 @@ export const ARCANA_DAMAGE_TAGS: Record<string, DamageTag[]> = {
   strength: [{ bucket: 'all', pct: 0.2, note: 'only while you hold no Death Defiance' }],
   origination: [{ vuln: 0.25, note: 'foes hit by curses from two different Olympians' }],
 }
+
+export const HAMMER_DAMAGE_TAGS: Record<string, DamageTag[]> = {
+  'extending-wallop': [{ bucket: 'attack', pct: 1.0, note: 'distant foes only' }],
+  'cross-cataclysm': [{ bucket: 'omega', pct: 0.5 }],
+  'rapid-thrasher': [{ bucket: 'attack', pct: 0.5, note: 'attack speed ≈ DPS' }],
+  'rapid-moonshot': [{ bucket: 'special', pct: 0.25, note: 'special speed' }],
+  'dual-moonshot': [{ bucket: 'special', shots: 2, note: '-40% range' }],
+  'giga-moonburst': [{ bucket: 'omega', pct: 3.0, note: 'requires channeling +30 Magick' }],
+  'aetheric-moonburst': [{ bucket: 'omega', pct: 0.5 }],
+  'mirrored-thrasher': [{ bucket: 'attack', shots: 2, note: 'costs 5 Magick per hit' }],
+
+  'sweeping-ambush': [{ bucket: 'omega', pct: 4.0, note: '+20 Magick cost' }],
+  'skulking-onslaught': [{ bucket: 'attack', pct: 1.5, note: 'from behind' }],
+  'final-slice': [{ bucket: 'attack', pct: 0.6, note: 'sequence finisher only' }],
+  'dancing-knives': [{ bucket: 'special', pct: 0.15 }],
+  'hidden-knives': [{ bucket: 'special', pct: 0.2 }],
+  'rapid-onslaught': [{ bucket: 'attack', pct: 0.35, note: 'attack speed' }],
+  'sudden-flurry': [{ bucket: 'omega', pct: 0.4, note: 'Omega Special channel speed' }],
+  'sinister-pinion': [{ bucket: 'special', pct: 1.0, note: 'tick rate doubled' }],
+
+  'mega-blaze': [{ bucket: 'attack', pct: 0.3 }],
+  'furious-blaze': [{ bucket: 'attack', pct: 0.2, note: 'while channeling' }],
+  'rising-helix': [{ bucket: 'special', pct: 0.25, note: 'at full duration' }],
+
+  'rapid-slash': [{ bucket: 'attack', pct: 0.3, note: 'attack speed' }],
+  'furious-whirlwind': [{ bucket: 'omega', pct: 0.35, note: 'channel speed' }],
+  'siege-shredder': [{ bucket: 'special', pct: 1.5 }],
+  'heaven-splitter': [{ bucket: 'attack', shots: 2, note: 'combo reduced to opening slam' }],
+
+  'mega-driver': [{ bucket: 'special', pct: 0.5 }],
+  'rapid-driver': [{ bucket: 'special', pct: 0.35, note: 'special speed' }],
+  'looming-ignition': [{ bucket: 'attack', pct: 0.5, note: 'detonating Attacks' }],
+  'garmr-gaze': [{ bucket: 'attack', pct: 0.25 }],
+  'leering-glance': [{ bucket: 'attack', pct: 0.15, note: 'successive hits' }],
+  'boosted-ignition': [{ bucket: 'attack', pct: 0.15, note: 'after Dash or Special' }],
+  'runic-driver': [{ bucket: 'special', pct: 0.15, note: 'per foe struck' }],
+  'helheim-charge': [{ bucket: 'omega', shots: 3 }],
+
+  'rapid-frame': [{ bucket: 'attack', pct: 0.35, note: 'attack speed' }],
+  'siege-frame': [{ bucket: 'attack', pct: 0.3 }],
+  'mooncrest-riser': [{ bucket: 'attack', pct: 0.4, note: 'Dash-Strike only' }],
+  'chakra-collider': [{ bucket: 'omega', pct: 1.5 }],
+}

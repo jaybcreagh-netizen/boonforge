@@ -13,11 +13,12 @@ import Icon from './Icon'
 interface Props {
   build: BuildState
   onBuildChange: (build: BuildState) => void
+  pickCore: (boon: Boon) => void
 }
 
 const SLOT_ORDER: Record<string, number> = { attack: 0, special: 1, cast: 2, sprint: 3, none: 4 }
 
-export default function RunMode({ build, onBuildChange }: Props) {
+export default function RunMode({ build, onBuildChange, pickCore }: Props) {
   const [spawnGod, setSpawnGod] = useState<GodId | null>(null)
   const [editingPool, setEditingPool] = useState(false)
   const owned = ownedSet(build)
@@ -167,7 +168,7 @@ export default function RunMode({ build, onBuildChange }: Props) {
                       missingGroups={missing}
                       score={sugg?.score}
                       reason={reason}
-                      onClick={() => onBuildChange(toggleBoon(build, boon))}
+                      onClick={() => pickCore(boon)}
                     />
                   )
                 })}
@@ -218,7 +219,7 @@ export default function RunMode({ build, onBuildChange }: Props) {
 
         <div className="space-y-4">
           <SuggestionPanel items={suggs.slice(0, 5)} onPick={pickById} />
-          <DamagePanel pickedIds={build.picked} arcanaIds={build.arcana} />
+          <DamagePanel pickedIds={build.picked} arcanaIds={build.arcana} hammerIds={build.hammers} />
         </div>
       </div>
     </div>

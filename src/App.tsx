@@ -4,7 +4,7 @@ import { EMPTY_BUILD, MAX_KEEPSAKES, SEEDED_GOD_IDS } from './data/types'
 import { GODS } from './data/gods'
 import { WEAPON_BY_ID } from './data/weapons'
 import { boonsForGod, BOON_BY_ID } from './data/boons'
-import { slotPick, toggleBoon, unmetGroups, unlockCandidates, ownedSet, suggestions } from './lib/build'
+import { ownedSet, slotPick, swapImpact, toggleBoon, unmetGroups, unlockCandidates, suggestions } from './lib/build'
 import { decodeBuild } from './lib/share'
 import WeaponPanel from './components/WeaponPanel'
 import KeepsakePanel from './components/KeepsakePanel'
@@ -87,7 +87,27 @@ export default function App() {
     if (boon) setBuild(toggleBoon(build, boon))
   }
 
+  const attemptPick = (boon: Boon) => {
+    if (build.picked.includes(boon.id)) {
+      setBuild(toggleBoon(build, boon))
+      return
+    }
+    const impact = swapImpact(build, boon)
+    if (impact.displaced && impact.brokenPaths.length > 0) {
+      setSwapPrompt({ incoming: boon, impact })
+      return
+    }
+    setBuild(toggleBoon(build, boon))
+  }
+
+  const confirmSwap = () => {
+    if (!swapPrompt) return
+    setBuild(toggleBoon(build, swapPrompt.incoming))
+    setSwapPrompt(null)
+  }
+
   const [confirmNewRun, setConfirmNewRun] = useState(false)
+  const [swapPrompt, setSwapPrompt] = useState<{ incoming: Boon; impact: ReturnType<typeof swapImpact> } | null>(null)
 
   useEffect(() => {
     if (!confirmNewRun) return
@@ -214,7 +234,7 @@ export default function App() {
 
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-6">
         {mode === 'run' ? (
-          <RunMode build={build} onBuildChange={setBuild} />
+          <RunMode build={build} onBuildChange={setBuild} pickCore={attemptPick} />
         ) : (
           <>
             <SlotBar picks={picks} onClear={clearSlot} />
@@ -279,7 +299,7 @@ export default function App() {
                           picked={owned.has(boon.id)}
                           dimmed={missing.length > 0}
                           missingGroups={missing}
-                          onClick={() => setBuild(toggleBoon(build, boon))}
+                          onClick={() => attemptPick(boon)}
                         />
                       )
                     })}
@@ -303,6 +323,39 @@ export default function App() {
           </div>
         </div>
           </>
+        )}
+
+        {swapPrompt && (
+          <div className="fixed inset-x-0 bottom-4 z-30 mx-auto flex max-w-xl flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-amber-400/50 bg-zinc-900/95 px-4 py-3 shadow-xl backdrop-blur">
+            <p className="min-w-0 flex-1 text-xs leading-relaxed text-zinc-300">
+              Taking <span className="font-semibold text-amber-200">{swapPrompt.incoming.name}</span> replaces{' '}
+              <span className="font-semibold text-zinc-100">{swapPrompt.impact.displaced?.name}</span>
+              {swapPrompt.impact.brokenPaths.length > 0 && (
+                <>
+                  {' '}—{' '}
+                  <span className="text-red-300">
+                    {swapPrompt.impact.brokenPaths.map((b) => b.name).join(', ')} go{swapPrompt.impact.brokenPaths.length > 1 ? '' : 'es'} back to Locked
+                  </span>
+                </>
+              )}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setSwapPrompt(null)}
+                className="rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-400 transition hover:text-zinc-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmSwap}
+                className="rounded-lg border border-amber-400/50 bg-amber-400/10 px-3 py-1.5 text-xs font-semibold text-amber-100 transition hover:border-amber-300"
+              >
+                Take anyway
+              </button>
+            </div>
+          </div>
         )}
 
         <div className="ornament mx-auto max-w-md" />
