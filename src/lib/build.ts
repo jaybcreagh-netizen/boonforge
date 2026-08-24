@@ -1,4 +1,4 @@
-import { BOON_BY_ID, BOONS } from '../data/boons'
+import { BOON_BY_ID, BOONS, boonsForGod } from '../data/boons'
 import { KEEPSAKE_BY_ID } from '../data/keepsakes'
 import { aspectById } from '../data/weapons'
 import type { Boon, BoonSlot, BuildState, Element, GodId, Infusion } from '../data/types'
@@ -98,6 +98,7 @@ export function unlockCandidates(pickedIds: string[], activeGods: Set<string>): 
   for (const boon of BOON_BY_ID.values()) {
     if (boon.type === 'core') continue
     if (!boon.gods.some((g) => activeGods.has(g))) continue
+    if (!pathFeasible(boon, owned, activeGods)) continue
     const missing = unmetGroups(boon, owned)
     list.push({ boon, missing, ready: missing.length === 0 })
   }
@@ -109,6 +110,24 @@ export function unlockCandidates(pickedIds: string[], activeGods: Set<string>): 
   )
 }
 
+/** Cores a god can actually offer right now: passives plus boons for empty slots. No overwrites mid-run. */
+export function coreOffers(build: BuildState, godId: GodId): Boon[] {
+  return boonsForGod(godId).filter(
+    (b) => b.type === 'core' && (b.slot === 'none' || !slotPick(build, b.slot)),
+  )
+}
+
+/** A path is completable this run when every OR-group contains something already owned, or offered by a pool god. */
+export function pathFeasible(boon: Boon, owned: Set<string>, pool: Set<string>): boolean {
+  return boon.requires.every((group) =>
+    group.some((id) => {
+      if (owned.has(id)) return true
+      const prereq = BOON_BY_ID.get(id)
+      return prereq ? prereq.gods.some((g) => pool.has(g)) : false
+    }),
+  )
+}
+
 export interface Suggestion {
   boon: Boon
   score: number
@@ -116,10 +135,13 @@ export interface Suggestion {
   progressCount: number
   infusionFills: Array<{ name: string; element: Element | 'any'; need: number }>
   fitsAspect?: string
+  focus?: boolean
 }
 
 export function suggestionReason(item: Suggestion): string[] {
-  const reasons = item.unlocks.map((u) => `Unlocks ${u.name}`)
+  const reasons: string[] = []
+  if (item.focus) reasons.push('Focus path')
+  for (const u of item.unlocks) reasons.push(`Unlocks ${u.name}`)
   if (item.progressCount > 0) {
     reasons.push(`Advances ${item.progressCount} path${item.progressCount > 1 ? 's' : ''}`)
   }
@@ -134,29 +156,44 @@ export function suggestionReason(item: Suggestion): string[] {
   return reasons
 }
 
-export function suggestions(pickedIds: string[], activeGods: Set<string>, aspectId?: string | null, limit = 5): Suggestion[] {
+export function suggestions(pickedIds: string[], activeGods: Set<string>, aspectId?: string | null, focusPathId?: string | null, limit = 5): Suggestion[] {
   const owned = new Set(pickedIds)
   const counts = elementCounts(pickedIds)
   const infusions = pickedIds.flatMap((id): Boon[] => {
     const b = BOON_BY_ID.get(id)
     return b?.infusion ? [b] : []
   })
-  const specials = [...BOON_BY_ID.values()].filter((b) => b.type !== 'core' && !owned.has(b.id))
+  const specials = [...BOON_BY_ID.values()].filter(
+    (b) => b.type !== 'core' && !owned.has(b.id) && b.gods.some((g) => activeGods.has(g)) && pathFeasible(b, owned, activeGods),
+  )
   const base = specials.map((boon) => ({ boon, missing: unmetGroups(boon, owned).length }))
   const aspect = aspectById(aspectId ?? null)
+
+  const slotOccupied = new Set<string>()
+  for (const id of pickedIds) {
+    const b = BOON_BY_ID.get(id)
+    if (b && b.slot !== 'none') slotOccupied.add(b.slot)
+  }
 
   const out: Suggestion[] = []
   for (const cand of BOONS) {
     if (cand.type !== 'core' || owned.has(cand.id)) continue
     if (!cand.gods.some((g) => activeGods.has(g))) continue
+    if (cand.slot !== 'none' && slotOccupied.has(cand.slot)) continue
     const next = new Set(owned)
     next.add(cand.id)
     const unlocks: Boon[] = []
     let progressCount = 0
+    let focus = false
     for (const { boon, missing } of base) {
       const after = unmetGroups(boon, next).length
-      if (after === 0) unlocks.push(boon)
-      else if (after < missing) progressCount++
+      if (after === 0) {
+        unlocks.push(boon)
+        if (focusPathId && boon.id === focusPathId) focus = true
+      } else if (after < missing) {
+        progressCount++
+        if (focusPathId && boon.id === focusPathId) focus = true
+      }
     }
     const infusionFills: Suggestion['infusionFills'] = []
     for (const inf of infusions) {
@@ -168,6 +205,7 @@ export function suggestions(pickedIds: string[], activeGods: Set<string>, aspect
       }
     }
     let score = unlocks.length * 10 + progressCount * 3 + infusionFills.length * 4
+    if (focus) score += 25
     let fitsAspect: string | undefined
     if (aspect?.synergy) {
       let bonus = 0
@@ -184,7 +222,14 @@ export function suggestions(pickedIds: string[], activeGods: Set<string>, aspect
       }
     }
     if (score <= 0) continue
-    out.push({ boon: cand, score, unlocks, progressCount, infusionFills, fitsAspect })
+    out.push({ boon: cand, score, unlocks, progressCount, infusionFills, fitsAspect, focus })
   }
-  return out.sort((a, b) => b.score - a.score || a.boon.name.localeCompare(b.boon.name)).slice(0, limit)
+  return out
+    .sort(
+      (a, b) =>
+        Number(b.focus) - Number(a.focus) ||
+        b.score - a.score ||
+        a.boon.name.localeCompare(b.boon.name),
+    )
+    .slice(0, limit)
 }

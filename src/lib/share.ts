@@ -17,6 +17,7 @@ interface WirePayload {
   c?: unknown
   m?: unknown
   n?: unknown
+  f?: unknown
 }
 
 function encode(code: string): string {
@@ -35,7 +36,7 @@ function decode(text: string): string {
 }
 
 export function encodeBuild(build: BuildState): string {
-  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool, c: build.arcana, m: build.hammers, n: build.hexNodes }))
+  return encode(JSON.stringify({ w: build.weaponId, a: build.aspectId, p: build.picked, k: build.keepsakes, h: build.hexId, g: build.pool, c: build.arcana, m: build.hammers, n: build.hexNodes, f: build.focusPath }))
 }
 
 export function decodeBuild(text: string): BuildState | null {
@@ -79,7 +80,10 @@ export function decodeBuild(text: string): BuildState | null {
       ? parsed.n.filter((id): id is string => typeof id === 'string')
       : []
 
-    return { weaponId, aspectId, picked, keepsakes, hexId, pool, arcana, hammers, hexNodes }
+    const focusPath =
+      typeof parsed.f === 'string' && BOON_BY_ID.has(parsed.f) ? parsed.f : null
+
+    return { weaponId, aspectId, picked, keepsakes, hexId, pool, arcana, hammers, hexNodes, focusPath }
   } catch {
     return null
   }

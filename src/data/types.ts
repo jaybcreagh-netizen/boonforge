@@ -122,6 +122,7 @@ export interface BuildState {
   arcana: string[]
   hammers: string[]
   hexNodes: string[]
+  focusPath: string | null
 }
 
 export const MAX_KEEPSAKES = 2
@@ -136,4 +137,5 @@ export const EMPTY_BUILD: BuildState = {
   arcana: [],
   hammers: [],
   hexNodes: [],
+  focusPath: null,
 }

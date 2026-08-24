@@ -37,6 +37,7 @@ function loadBuild(): BuildState {
       arcana: Array.isArray(parsed.arcana) ? parsed.arcana.filter((id) => typeof id === 'string') : [],
       hammers: Array.isArray(parsed.hammers) ? parsed.hammers.filter((id) => typeof id === 'string') : [],
       hexNodes: Array.isArray(parsed.hexNodes) ? parsed.hexNodes.filter((id) => typeof id === 'string') : [],
+      focusPath: typeof parsed.focusPath === 'string' ? parsed.focusPath : null,
     }
   } catch {
     return EMPTY_BUILD
@@ -80,7 +81,7 @@ export default function App() {
 
   const owned = useMemo(() => ownedSet(build), [build])
   const candidates = useMemo(() => unlockCandidates(build.picked, activeGods), [build, activeGods])
-  const suggs = useMemo(() => suggestions(build.picked, activeGods, build.aspectId), [build.picked, activeGods, build.aspectId])
+  const suggs = useMemo(() => suggestions(build.picked, activeGods, build.aspectId, null), [build.picked, activeGods, build.aspectId])
 
   const pickById = (id: string) => {
     const boon = BOON_BY_ID.get(id)
