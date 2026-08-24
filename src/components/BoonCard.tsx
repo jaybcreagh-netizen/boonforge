@@ -1,4 +1,5 @@
 import type { Boon } from '../data/types'
+import { AUGMENT_LABELS } from '../data/types'
 import { GOD_BY_ID } from '../data/gods'
 import { boonName } from '../data/boons'
 import Icon from './Icon'
@@ -48,6 +49,14 @@ export default function BoonCard({ boon, picked = false, dimmed = false, missing
           {boon.name}
         </span>
         <span className="flex shrink-0 items-center gap-1">
+          {boon.augments && (
+            <span
+              className="rounded border border-teal-400/30 bg-teal-400/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-teal-300"
+              title={`Augments your ${AUGMENT_LABELS[boon.augments]} without taking a slot`}
+            >
+              +{AUGMENT_LABELS[boon.augments]}
+            </span>
+          )}
           {typeof score === 'number' && score > 0 && (
             <span className="rounded border border-emerald-400/30 bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-emerald-300">
               +{score}

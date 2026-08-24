@@ -4,7 +4,7 @@ import { EMPTY_BUILD, MAX_KEEPSAKES, SEEDED_GOD_IDS } from './data/types'
 import { GODS } from './data/gods'
 import { WEAPON_BY_ID } from './data/weapons'
 import { boonsForGod, BOON_BY_ID } from './data/boons'
-import { ownedSet, slotPick, swapImpact, toggleBoon, unmetGroups, unlockCandidates, suggestions } from './lib/build'
+import { ownedSet, pickedAugments, slotPick, swapImpact, toggleBoon, unmetGroups, unlockCandidates, suggestions } from './lib/build'
 import { decodeBuild } from './lib/share'
 import WeaponPanel from './components/WeaponPanel'
 import KeepsakePanel from './components/KeepsakePanel'
@@ -238,7 +238,7 @@ export default function App() {
           <RunMode build={build} onBuildChange={setBuild} pickCore={attemptPick} />
         ) : (
           <>
-            <SlotBar picks={picks} onClear={clearSlot} />
+            <SlotBar picks={picks} augments={pickedAugments(build)} onClear={clearSlot} />
             <HistoryStrip picked={build.picked} onUndo={() => setBuild({ ...build, picked: build.picked.slice(0, -1) })} />
 
         <div className="grid items-start gap-6 lg:grid-cols-[300px_minmax(0,1fr)_320px]">

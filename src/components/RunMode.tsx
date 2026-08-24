@@ -7,6 +7,7 @@ import {
   coreOffers,
   effectivePool,
   ownedSet,
+  pickedAugments,
   slotPick,
   suggestionReason,
   suggestions,
@@ -112,6 +113,7 @@ export default function RunMode({ build, onBuildChange, pickCore }: Props) {
     <div className="space-y-6">
       <SlotBar
         picks={picks}
+        augments={pickedAugments(build)}
         onClear={(slot) => {
           const boon = picks[slot]
           if (boon) onBuildChange(toggleBoon(build, boon))

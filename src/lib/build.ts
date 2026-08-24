@@ -8,6 +8,13 @@ export function ownedSet(build: BuildState): Set<string> {
   return new Set(build.picked)
 }
 
+export function pickedAugments(build: BuildState): Boon[] {
+  return build.picked.flatMap((id): Boon[] => {
+    const boon = BOON_BY_ID.get(id)
+    return boon?.augments ? [boon] : []
+  })
+}
+
 /** Gods reachable this run: the declared pool plus gods pulled in via their keepsakes. */
 export function effectivePool(build: BuildState): Set<GodId> {
   const pool = new Set<GodId>(build.pool)

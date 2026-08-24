@@ -21,7 +21,7 @@ const POSEIDON_CORE: Boon[] = [
     description: 'Your Omega Cast gains +150 Power and knocks foes away.',
     requires: [['tidal-ring', 'storm-ring', 'arctic-ring', 'engagement-ring', 'solar-ring', 'smolder-ring', 'sword-ring']],
   },
-  { id: 'ocean-swell', gods: ['poseidon'], name: 'Ocean Swell', type: 'core', slot: 'none', element: 'water', description: 'Your Omega Moves also launch a wide wave dealing 40 damage that knocks foes away, using +5 Magick.', requires: [] },
+  { id: 'ocean-swell', augments: 'omega', gods: ['poseidon'], name: 'Ocean Swell', type: 'core', slot: 'none', element: 'water', description: 'Your Omega Moves also launch a wide wave dealing 40 damage that knocks foes away, using +5 Magick.', requires: [] },
   { id: 'water-fitness', gods: ['poseidon'], name: 'Water Fitness', type: 'core', slot: 'none', infusion: { element: 'water', count: 2 }, description: 'Gain +15 Max Life for each Water boon you have.', requires: [] },
 ]
 

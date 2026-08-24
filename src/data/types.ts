@@ -4,6 +4,17 @@ export type Element = (typeof ELEMENTS)[number]
 export const BOON_SLOTS = ['attack', 'special', 'cast', 'sprint'] as const
 export type BoonSlot = (typeof BOON_SLOTS)[number]
 
+export type AugmentTarget = BoonSlot | 'omega' | 'any'
+
+export const AUGMENT_LABELS: Record<AugmentTarget, string> = {
+  attack: 'Attacks',
+  special: 'Specials',
+  cast: 'Casts',
+  sprint: 'Sprint',
+  omega: 'Ω Moves',
+  any: 'all strikes',
+}
+
 export type BoonType = 'core' | 'duo' | 'legendary'
 
 export type GodId =
@@ -50,6 +61,8 @@ export interface Boon {
   name: string
   type: BoonType
   slot: BoonSlot | 'none'
+  /** Slot-less boons that enhance an existing move rather than replacing it. */
+  augments?: AugmentTarget
   element?: Element
   infusion?: Infusion
   description: string

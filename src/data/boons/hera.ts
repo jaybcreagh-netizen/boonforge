@@ -16,12 +16,13 @@ const HERA_CORE: Boon[] = [
     name: 'Rousing Reception',
     type: 'core',
     slot: 'none',
+    augments: 'cast',
     element: 'air',
     description: 'Your Casts deal 60 damage to foes wherever they appear upon joining the Encounter.',
     requires: [['rapture-ring', 'solar-ring', 'arctic-ring', 'anvil-ring', 'engagement-ring', 'smolder-ring', 'tidal-ring', 'storm-ring', 'sword-ring']],
   },
   { id: 'uncommon-grace', gods: ['hera'], name: 'Uncommon Grace', type: 'core', slot: 'none', element: 'fire', description: 'While none of your other boons are Common, you deal +10% damage.', requires: [] },
-  { id: 'fine-line', gods: ['hera'], name: 'Fine Line', type: 'core', slot: 'none', element: 'earth', description: 'Your Omega Moves create a fissure dealing 120 damage in a long line, but cost +15 Magick.', requires: [] },
+  { id: 'fine-line', augments: 'omega', gods: ['hera'], name: 'Fine Line', type: 'core', slot: 'none', element: 'earth', description: 'Your Omega Moves create a fissure dealing 120 damage in a long line, but cost +15 Magick.', requires: [] },
   { id: 'proper-upbringing', gods: ['hera'], name: 'Proper Upbringing', type: 'core', slot: 'none', infusion: { element: 'any', count: 4 }, description: 'While you hold at least one boon of each Element, all your Common boons gain Rare rarity.', requires: [] },
 ]
 

@@ -29,7 +29,7 @@ const ZEUS_CORE: Boon[] = [
     description: 'Your lightning bolt effects have a 10% chance to strike twice.',
     requires: [['heaven-strike', 'heaven-flourish', 'storm-ring', 'thunder-rush', 'power-surge', 'divine-vengeance', 'lightning-lance']],
   },
-  { id: 'arc-flash', gods: ['zeus'], name: 'Arc Flash', type: 'core', slot: 'none', element: 'air', description: 'Omega Moves immediately activate Blitz effects and make them stronger (+30% bonus damage).', requires: [['heaven-strike', 'heaven-flourish']] },
+  { id: 'arc-flash', augments: 'omega', gods: ['zeus'], name: 'Arc Flash', type: 'core', slot: 'none', element: 'air', description: 'Omega Moves immediately activate Blitz effects and make them stronger (+30% bonus damage).', requires: [['heaven-strike', 'heaven-flourish']] },
   { id: 'electric-overload', gods: ['zeus'], name: 'Electric Overload', type: 'core', slot: 'none', element: 'air', description: 'Your chain-lightning deals 20% more damage and bounces up to 3 additional times.', requires: [['static-shock']] },
   { id: 'air-quality', gods: ['zeus'], name: 'Air Quality', type: 'core', slot: 'none', infusion: { element: 'air', count: 5 }, description: 'Infusion: while you hold at least 5 Air boons, your hits never deal less than 50 damage.', requires: [] },
 ]
